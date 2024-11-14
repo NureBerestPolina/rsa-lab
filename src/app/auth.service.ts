@@ -1,35 +1,45 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { JSEncrypt } from 'jsencrypt';
+import { RSAHelper } from './RsaHelper';
+import { User } from './user-model';
+
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class AuthService {
-  private apiUrl = 'http://localhost:5000/api/auth';
+export class LoginService {
+  baseHttpAddress: string = 'http://localhost:5000/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private rsaHelper: RSAHelper) {}
 
-  getPublicKey(): Observable<string> {
-    return this.http.get(`${this.apiUrl}/publicKey`, { responseType: 'text' });
+  basicLogin(user: User): Observable<string> {
+    return this.http.post<string>(
+      this.baseHttpAddress + 'api/user/basic-login',
+      user
+    );
   }
 
-  // Шифрування даних
-  encryptCredentials(publicKey: string, username: string, password: string): { encryptedUsername: string, encryptedPassword: string } {
-    const encryptor = new JSEncrypt();
-    encryptor.setPublicKey(publicKey);
+  rsaLogin(user: User): Observable<string> {
+    const encUser: User = {
+      userName: this.rsaHelper.encryptWithPublicKey(user.userName),
+      password: this.rsaHelper.encryptWithPublicKey(user.password),
+    };
 
-    const encryptedUsername = encryptor.encrypt(username) || '';
-    const encryptedPassword = encryptor.encrypt(password) || '';
-
-    return { encryptedUsername, encryptedPassword };
+    return this.http.post<string>(
+      this.baseHttpAddress + 'api/user/rsa-login',
+      encUser
+    );
   }
 
-  login(encryptedUsername: string, encryptedPassword: string): Observable<string> {
-    return this.http.post<string>(`${this.apiUrl}/login`, {
-      username: encryptedUsername,
-      password: encryptedPassword
-    });
+  rsaAdvancedLogin(user: User): Observable<string> {
+    const encJsonUser = this.rsaHelper.encryptWithPublicKey(
+      JSON.stringify(user)
+    );
+
+    return this.http.post<string>(
+      this.baseHttpAddress + 'api/user/rsa-advanced-login',
+      { data: encJsonUser }
+    );
   }
 }

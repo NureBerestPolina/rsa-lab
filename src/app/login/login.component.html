@@ -9,7 +9,7 @@
           type="text"
           class="form-control"
           placeholder="Username"
-          [(ngModel)]="username"
+          [(ngModel)]="user.userName"
         />
       </div>
       
@@ -18,11 +18,11 @@
           type="password"
           class="form-control"
           placeholder="Password"
-          [(ngModel)]="password"
+          [(ngModel)]="user.password"
         />
       </div>
       
-      <button class="btn btn-success w-100 mt-4" (click)="handleLogin()">Увійти</button>
+      <button class="btn btn-success w-100 mt-4" (click)="rsaAdvancedLogin()">Увійти</button>
       
       <p class="text-center mt-3 text-danger">{{ message }}</p>
     </div>

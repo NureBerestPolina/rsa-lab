@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../auth.service';
+import { User } from '../user-model';
+import { LoginService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -7,30 +8,47 @@ import { AuthService } from '../auth.service';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  username = '';
-  password = '';
-  message = '';
+  public user: User = {
+    userName: 'Pieter@email.com',
+    password: 'ThisIsAPassword',
+  };
+  public message: string = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(private loginService: LoginService) {}
 
-  async handleLogin() {
-    try {
-      const publicKey = await this.authService.getPublicKey().toPromise();
+  basicLogin() {
+    this.loginService.basicLogin(this.user).subscribe(
+      (result) => {
+        console.log(result);
+      },
+      (err) => {
+        console.error(err);
+        this.message = err.error;
+      }
+    );
+  }
 
-      const { encryptedUsername, encryptedPassword } = this.authService.encryptCredentials(publicKey!, this.username, this.password);
+  rsaLogin() {
+    this.loginService.rsaLogin(this.user).subscribe(
+      (result) => {
+        console.log(result);
+      },
+      (err) => {
+        console.error(err);
+        this.message = err.error;
+      }
+    );
+  }
 
-      this.authService.login(encryptedUsername, encryptedPassword).subscribe(
-        response => {
-          this.message = response;
-        },
-        error => {
-          console.error("Помилка під час авторизації:", error);
-          this.message = 'Авторизація не вдалася';
-        }
-      );
-    } catch (error) {
-      console.error("Помилка під час отримання публічного ключа:", error);
-      this.message = 'Не вдалося отримати публічний ключ';
-    }
+  rsaAdvancedLogin() {
+    this.loginService.rsaAdvancedLogin(this.user).subscribe(
+      (result) => {
+        console.log(result);
+      },
+      (err) => {
+        console.error(err);
+        this.message = err.error;
+      }
+    );
   }
 }
